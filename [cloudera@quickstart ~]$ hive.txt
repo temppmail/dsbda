@@ -1,0 +1,198 @@
+[cloudera@quickstart ~]$ hive
+
+Logging initialized using configuration in file:/etc/hive/conf.dist/hive-log4j.properties
+WARNING: Hive CLI is deprecated and migration to Beeline is recommended.
+hive> show databases;
+OK
+db
+default
+Time taken: 1.818 seconds, Fetched: 2 row(s)
+hive> use db;
+OK
+Time taken: 0.15 seconds
+hive> show tables;
+OK
+customer
+flight
+item
+order
+Time taken: 0.099 seconds, Fetched: 4 row(s)
+hive> load data local inpath 'customer.txt' into table customer;
+Loading data to table db.customer
+Table db.customer stats: [numFiles=1, totalSize=37]
+OK
+Time taken: 2.662 seconds
+hive> CREATE TABLE Customer_info (
+    >       Cust_ID INT,
+    >       Cust_Name STRING,
+    >       OrderID INT)
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > STORED AS TEXTFILE;
+OK
+Time taken: 0.556 seconds
+hive> CREATE TABLE order_info (
+    >       OrderID INT,
+    >       ItemID INT,
+    >       Quantity INT)
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > STORED AS TEXTFILE;
+OK
+Time taken: 0.242 seconds
+hive> CREATE TABLE item_info (
+    >       Item_ID INT,
+    >       Item_Name STRING,
+    >       ItemPrice DOUBLE)
+    > ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > STORED AS TEXTFILE;
+OK
+Time taken: 0.189 seconds
+hive> load data local inpath 'customer.txt' into table customer_info;
+Loading data to table db.customer_info
+Table db.customer_info stats: [numFiles=1, totalSize=37]
+OK
+Time taken: 0.802 seconds
+hive> load data local inpath 'order.txt' into table order_info;
+Loading data to table db.order_info
+Table db.order_info stats: [numFiles=1, totalSize=20]
+OK
+Time taken: 0.786 seconds
+hive> load data local inpath 'item.txt' into table item_info;
+Loading data to table db.item_info
+Table db.item_info stats: [numFiles=1, totalSize=33]
+OK
+Time taken: 0.763 seconds
+hive> select * from customer_info;
+OK
+1	"Prath"	1
+2	"Yash"	2
+3	"Nikunj"	3
+NULL	NULL	NULL
+Time taken: 1.289 seconds, Fetched: 4 row(s)
+hive> select * from order_info;
+OK
+1	1	5
+2	2	10
+3	3	15
+Time taken: 0.173 seconds, Fetched: 3 row(s)
+hive> select * from item_info;
+OK
+1	"abc"	20.0
+2	"efg"	10.0
+3	"hij"	15.0
+Time taken: 0.18 seconds, Fetched: 3 row(s)
+hive> select order_id,item_id from order_info join item_info on order_info.item_id=item_info.item_id; 
+FAILED: SemanticException [Error 10002]: Line 1:69 Invalid column reference 'item_id'
+hive> select order_id,item_name from order_info inner join item_info on order_info.item_id=item_info.item_id; 
+FAILED: SemanticException [Error 10002]: Line 1:77 Invalid column reference 'item_id'
+hive> select order_id,item_name from order_info inner join item_info on order_info.itemid=item_info.item_id; 
+FAILED: SemanticException [Error 10004]: Line 1:7 Invalid table alias or column reference 'order_id': (possible column names are: order_info.orderid, order_info.itemid, order_info.quantity, item_info.item_id, item_info.item_name, item_info.itemprice)
+hive> select orderid,item_name from order_info inner join item_info on order_info.itemid=item_info.item_id; 
+Query ID = cloudera_20240508051313_e91e22e3-63c7-4f57-abbc-aa41bdcf3324
+Total jobs = 1
+Execution log at: /tmp/cloudera/cloudera_20240508051313_e91e22e3-63c7-4f57-abbc-aa41bdcf3324.log
+2024-05-08 05:13:28	Starting to launch local task to process map join;	maximum memory = 1013645312
+2024-05-08 05:13:45	Dump the side-table for tag: 0 with group count: 3 into file: file:/tmp/cloudera/efbe3860-c155-4bb4-a49a-3c08788879f3/hive_2024-05-08_05-13-01_996_6583120903883625719-1/-local-10003/HashTable-Stage-3/MapJoin-mapfile00--.hashtable
+2024-05-08 05:13:45	Uploaded 1 File to: file:/tmp/cloudera/efbe3860-c155-4bb4-a49a-3c08788879f3/hive_2024-05-08_05-13-01_996_6583120903883625719-1/-local-10003/HashTable-Stage-3/MapJoin-mapfile00--.hashtable (320 bytes)
+2024-05-08 05:13:45	End of local task; Time Taken: 17.028 sec.
+Execution completed successfully
+MapredLocal task succeeded
+Launching Job 1 out of 1
+Number of reduce tasks is set to 0 since there's no reduce operator
+Starting Job = job_1715166577061_0003, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1715166577061_0003/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1715166577061_0003
+Hadoop job information for Stage-3: number of mappers: 1; number of reducers: 0
+2024-05-08 05:15:02,792 Stage-3 map = 0%,  reduce = 0%
+2024-05-08 05:16:03,020 Stage-3 map = 100%,  reduce = 0%, Cumulative CPU 6.34 sec
+MapReduce Total cumulative CPU time: 6 seconds 340 msec
+Ended Job = job_1715166577061_0003
+MapReduce Jobs Launched: 
+Stage-Stage-3: Map: 1   Cumulative CPU: 6.34 sec   HDFS Read: 5976 HDFS Write: 24 SUCCESS
+Total MapReduce CPU Time Spent: 6 seconds 340 msec
+OK
+1	"abc"
+2	"efg"
+3	"hij"
+Time taken: 185.099 seconds, Fetched: 3 row(s)
+hive> SELECT MAX(ItemPrice * Quantity) FROM order_info
+    > ;
+FAILED: SemanticException [Error 10004]: Line 1:11 Invalid table alias or column reference 'ItemPrice': (possible column names are: orderid, itemid, quantity)
+hive> SELECT MAX(ItemPrice * Quantity) FROM order_info join item_info on  order_info.itemid=item_info.item_id;
+Query ID = cloudera_20240508051919_1fa465eb-c758-4058-be9b-7027402d7023
+Total jobs = 1
+Execution log at: /tmp/cloudera/cloudera_20240508051919_1fa465eb-c758-4058-be9b-7027402d7023.log
+2024-05-08 05:20:05	Starting to launch local task to process map join;	maximum memory = 1013645312
+2024-05-08 05:20:26	Dump the side-table for tag: 0 with group count: 3 into file: file:/tmp/cloudera/efbe3860-c155-4bb4-a49a-3c08788879f3/hive_2024-05-08_05-19-40_541_4222162040716884950-1/-local-10004/HashTable-Stage-2/MapJoin-mapfile10--.hashtable
+2024-05-08 05:20:27	Uploaded 1 File to: file:/tmp/cloudera/efbe3860-c155-4bb4-a49a-3c08788879f3/hive_2024-05-08_05-19-40_541_4222162040716884950-1/-local-10004/HashTable-Stage-2/MapJoin-mapfile10--.hashtable (320 bytes)
+2024-05-08 05:20:27	End of local task; Time Taken: 21.419 sec.
+Execution completed successfully
+MapredLocal task succeeded
+Launching Job 1 out of 1
+Number of reduce tasks determined at compile time: 1
+In order to change the average load for a reducer (in bytes):
+  set hive.exec.reducers.bytes.per.reducer=<number>
+In order to limit the maximum number of reducers:
+  set hive.exec.reducers.max=<number>
+In order to set a constant number of reducers:
+  set mapreduce.job.reduces=<number>
+Starting Job = job_1715166577061_0004, Tracking URL = http://quickstart.cloudera:8088/proxy/application_1715166577061_0004/
+Kill Command = /usr/lib/hadoop/bin/hadoop job  -kill job_1715166577061_0004
+Hadoop job information for Stage-2: number of mappers: 1; number of reducers: 1
+2024-05-08 05:21:35,265 Stage-2 map = 0%,  reduce = 0%
+2024-05-08 05:22:32,819 Stage-2 map = 100%,  reduce = 0%, Cumulative CPU 6.21 sec
+2024-05-08 05:23:18,677 Stage-2 map = 100%,  reduce = 67%, Cumulative CPU 8.12 sec
+2024-05-08 05:23:28,948 Stage-2 map = 100%,  reduce = 100%, Cumulative CPU 11.69 sec
+MapReduce Total cumulative CPU time: 11 seconds 690 msec
+Ended Job = job_1715166577061_0004
+MapReduce Jobs Launched: 
+Stage-Stage-2: Map: 1  Reduce: 1   Cumulative CPU: 11.69 sec   HDFS Read: 12194 HDFS Write: 6 SUCCESS
+Total MapReduce CPU Time Spent: 11 seconds 690 msec
+OK
+225.0
+Time taken: 231.087 seconds, Fetched: 1 row(s)
+hive> CREATE EXTERNAL TABLE CustomerInfoHBase (
+    >       Cust_ID INT,
+    >       Cust_Name STRING,
+    >       OrderID INT)
+    > STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    > WITH SERDEPROPERTIES (
+    >       "hbase.columns.mapping" = ":key,Customer:cust_name,Customer:order_id")
+    > TBLPROPERTIES ("hbase.table.name" = "CustomerInfo");
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:MetaException(message:HBase table CustomerInfo doesn't exist while the table is declared as an external table.)
+	at org.apache.hadoop.hive.hbase.HBaseStorageHandler.preCreateTable(HBaseStorageHandler.java:215)
+	at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.createTable(HiveMetaStoreClient.java:653)
+	at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.createTable(HiveMetaStoreClient.java:646)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.invoke(RetryingMetaStoreClient.java:91)
+	at com.sun.proxy.$Proxy9.createTable(Unknown Source)
+	at org.apache.hadoop.hive.ql.metadata.Hive.createTable(Hive.java:681)
+	at org.apache.hadoop.hive.ql.exec.DDLTask.createTable(DDLTask.java:4016)
+	at org.apache.hadoop.hive.ql.exec.DDLTask.execute(DDLTask.java:301)
+	at org.apache.hadoop.hive.ql.exec.Task.executeTask(Task.java:160)
+	at org.apache.hadoop.hive.ql.exec.TaskRunner.runSequential(TaskRunner.java:88)
+	at org.apache.hadoop.hive.ql.Driver.launchTask(Driver.java:1638)
+	at org.apache.hadoop.hive.ql.Driver.execute(Driver.java:1397)
+	at org.apache.hadoop.hive.ql.Driver.runInternal(Driver.java:1181)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:1047)
+	at org.apache.hadoop.hive.ql.Driver.run(Driver.java:1037)
+	at org.apache.hadoop.hive.cli.CliDriver.processLocalCmd(CliDriver.java:207)
+	at org.apache.hadoop.hive.cli.CliDriver.processCmd(CliDriver.java:159)
+	at org.apache.hadoop.hive.cli.CliDriver.processLine(CliDriver.java:370)
+	at org.apache.hadoop.hive.cli.CliDriver.executeDriver(CliDriver.java:756)
+	at org.apache.hadoop.hive.cli.CliDriver.run(CliDriver.java:675)
+	at org.apache.hadoop.hive.cli.CliDriver.main(CliDriver.java:615)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.hadoop.util.RunJar.run(RunJar.java:221)
+	at org.apache.hadoop.util.RunJar.main(RunJar.java:136)
+)
+hive> [cloudera@quickstart ~]$ hbase shell
+2024-05-08 05:26:15,140 INFO  [main] Configuration.deprecation: hadoop.native.lib is deprecated. Instead, use io.native.lib.available
+HBase Shell; enter 'help<RETURN>' for list of supported 

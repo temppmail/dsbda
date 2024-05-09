@@ -1,0 +1,13 @@
+ubuntu to cloudera:
+
+1. su root
+----password:cloudera-------
+2. mount -t vboxsf Shared Shared
+
+
+haddop:
+
+1. hadoop fs -put textfile.txt nick1
+2. hadoop jar jarfile.jar package.class nick1 nick2
+3. hadoop fs -ls nick2
+4. hadoop fs -cat above_url 
